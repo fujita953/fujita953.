@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>わんこフェスタ 写真撮影に関する規約</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .terms-container {
+            height: 350px; /* iPadでの視認性を考慮して高さを調整 */
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            padding: 15px;
+            text-align: left;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
+        .terms-item h3 {
+            color: #555;
+            margin-top: 15px;
+            font-size: 1.1em;
+        }
+        .terms-item ul {
+            padding-left: 20px;
+            margin-bottom: 15px;
+        }
+        button {
+            padding: 12px 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            margin: 5px;
+            transition: background-color 0.3s;
+        }
+        #agree-btn {
+            background-color: #4CAF50; /* 同意するボタンは緑色 */
+            color: white;
+        }
+        #agree-btn:hover {
+            background-color: #45a049;
+        }
+        #disagree-btn {
+            background-color: #f44336; /* 同意しないボタンは赤色 */
+            color: white;
+        }
+        #disagree-btn:hover {
+            background-color: #e53935;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>わんこフェスタ 写真撮影に関する利用規約</h2>
+    <p>以下の内容をご確認いただき、**「同意する」ボタンを押してください。**</p>
+
+    <div class="terms-container">
+        <div class="terms-item">
+            <h3>①個人情報等の利用目的について</h3>
+            <p>当社は、LINE連携を通じて取得するお客様の個人情報等（LINEのユーザーID、表示名等）を、以下の目的のために利用いたします。</p>
+            <ul>
+                <li>サービス提供および運営のため</li>
+                <li>セミナーのご案内や情報提供のため</li>
+                <li>サービス改善のための分析やアンケート実施のため</li>
+            </ul>
+            <p>取得した個人情報等は、上記の目的以外には利用いたしません。また、第三者への提供は、法令に基づく場合を除き行いません。</p>
+        </div>
+
+        <div class="terms-item">
+            <h3>②ワンちゃんの写真掲載についてのご案内</h3>
+            <p>当社では、ワンちゃんのお写真や動画をホームページやSNSなどに掲載させていただく場合があります。</p>
+            <ul>
+                <li>写真・動画は、当社の広報・PR活動の一環として使用します</li>
+                <li>飼い主さまのお名前など、個人が特定される情報は掲載しません</li>
+                <li>万が一、掲載後に「やっぱり削除してほしい」と思われた場合は、いつでもご連絡ください</li>
+            </ul>
+        </div>
+        
+        </div>
+
+    <button id="agree-btn" onclick="agree()">同意する</button>
+    <button id="disagree-btn" onclick="disagree()">同意しない</button>
+
+    <script>
+        // 「同意する」ボタンが押された時の動作
+        function agree() {
+            // camera.htmlへ遷移
+            window.location.href = "camera.html";
+        }
+
+        // 「同意しない」ボタンが押された時の動作
+        function disagree() {
+            alert("利用規約に同意いただけない場合、写真撮影はできません。");
+        }
+    </script>
+
+</body>
+</html>
