@@ -11,14 +11,14 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            align-items: center;
+            align-items: flex-end; /* ボタンを下部に配置 */
             height: 100vh;
             overflow: hidden;
         }
         #video {
             width: 100%;
             height: 100%;
-            object-fit: contain; /* 映像を画面内に収める */
+            object-fit: contain;
             position: absolute;
             top: 0;
             left: 0;
@@ -31,7 +31,7 @@
             z-index: 20;
             display: flex;
             justify-content: center;
-            align-items: flex-end;
+            align-items: flex-end; /* ボタンを下端に固定 */
         }
         #capture-button {
             background-color: white;
@@ -48,64 +48,79 @@
             transform: scale(0.9);
         }
         canvas {
-            display: none; /* 撮影用なので画面には表示しない */
+            display: none;
         }
     </style>
 </head>
 <body>
 
     <video id="video" autoplay playsinline></video>
-
     <div id="capture-area">
         <div id="capture-button" onclick="takePhoto()"></div>
     </div>
-    
     <canvas id="canvas"></canvas>
 
     <script>
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const context = canvas.getContext('2d');
-        let stream = null; // カメラのストリームを保持する変数
+        let stream = null; 
 
-        // ページが読み込まれたらカメラを起動
         function startCamera() {
-            // 外カメラ（背面カメラ）を優先して指定
-            navigator.mediaDevices.getUserMedia({ 
+            // ⭐ 高画質設定を追加：ideal (理想) の解像度を高く指定し、できる限り高解像度を取得する
+            const constraints = {
                 video: {
-                    facingMode: { exact: "environment" } // "environment" は背面カメラ
+                    facingMode: { exact: "environment" }, // 背面カメラを優先
+                    width: { ideal: 4096 }, // 理想的な幅（高い値を設定）
+                    height: { ideal: 2160 } // 理想的な高さ（高い値を設定）
                 } 
-            })
+            };
+            
+            navigator.mediaDevices.getUserMedia(constraints)
             .then(s => {
                 stream = s;
                 video.srcObject = stream;
                 video.play();
+                console.log("背面カメラ（高画質）で起動しました");
             })
             .catch(error => {
-                // 外カメラが使えない場合は、内カメラ（前面カメラ）を試す
-                navigator.mediaDevices.getUserMedia({ 
-                    video: true 
-                })
-                .then(s => {
-                    stream = s;
-                    video.srcObject = stream;
-                    video.play();
-                })
-                .catch(error => {
-                    alert("カメラが起動できませんでした。iPadの設定でブラウザのカメラ利用が許可されているかご確認ください。");
-                    console.error("Camera startup failed: ", error);
-                });
+                // 背面カメラが高解像度で起動できない場合は、通常の背面カメラを試す
+                const fallbackConstraints = {
+                    video: { facingMode: { exact: "environment" } }
+                };
+                return navigator.mediaDevices.getUserMedia(fallbackConstraints);
+            })
+            .then(s => {
+                if (!s) return; // 既に成功していたら処理をスキップ
+                stream = s;
+                video.srcObject = stream;
+                video.play();
+                console.log("背面カメラ（通常画質）で起動しました");
+            })
+            .catch(error => {
+                // それでも失敗したら、内カメラを試す
+                return navigator.mediaDevices.getUserMedia({ video: true });
+            })
+            .then(s => {
+                if (!s) return; // 既に成功していたら処理をスキップ
+                stream = s;
+                video.srcObject = stream;
+                video.play();
+                console.log("内カメラで起動しました");
+            })
+            .catch(error => {
+                alert("カメラが起動できませんでした。iPadの設定をご確認ください。");
+                console.error("Camera startup failed: ", error);
             });
         }
         
-        // 撮影ボタンが押された時の動作
         function takePhoto() {
             if (!stream) {
-                alert("カメラが起動していません。しばらくお待ちください。");
+                alert("カメラが起動していません。");
                 return;
             }
 
-            // CanvasのサイズをVideoのサイズに合わせる
+            // Canvasのサイズをカメラの実際に取得しているサイズに合わせる
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
 
@@ -113,14 +128,13 @@
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
             // Canvasの内容を画像データ（PNG）として取得
-            const dataURL = canvas.toDataURL('image/png');
+            const dataURL = canvas.toDataURL('image/png', 1.0); // 1.0で最高画質を指定
 
             // ダウンロードリンクを作成
             const link = document.createElement('a');
             link.href = dataURL;
-            link.download = 'wankofesta_photo_' + new Date().getTime() + '.png'; // ファイル名をユニークにする
+            link.download = 'wankofesta_photo_' + new Date().getTime() + '.png';
 
-            // リンクをクリックしてダウンロードを開始
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -128,7 +142,6 @@
             alert("写真を保存しました！");
         }
 
-        // カメラを起動
         startCamera();
     </script>
 
