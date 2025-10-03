@@ -1,26 +1,136 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>カメラ画面</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>わんこフェスタ 写真撮影</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; text-align: center; }
-        video { width: 100%; max-width: 600px; border: 1px solid #ccc; }
+        body {
+            margin: 0;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* 映像を画面内に収める */
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+        }
+        #capture-area {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 20;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+        #capture-button {
+            background-color: white;
+            border: 10px solid #ddd;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            margin-bottom: 5vh;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            transition: transform 0.1s;
+        }
+        #capture-button:active {
+            transform: scale(0.9);
+        }
+        canvas {
+            display: none; /* 撮影用なので画面には表示しない */
+        }
     </style>
 </head>
 <body>
-    <h2>カメラプレビュー</h2>
-    <video id="video" autoplay></video>
+
+    <video id="video" autoplay playsinline></video>
+
+    <div id="capture-area">
+        <div id="capture-button" onclick="takePhoto()"></div>
+    </div>
+    
+    <canvas id="canvas"></canvas>
 
     <script>
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                document.getElementById('video').srcObject = stream;
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+        let stream = null; // カメラのストリームを保持する変数
+
+        // ページが読み込まれたらカメラを起動
+        function startCamera() {
+            // 外カメラ（背面カメラ）を優先して指定
+            navigator.mediaDevices.getUserMedia({ 
+                video: {
+                    facingMode: { exact: "environment" } // "environment" は背面カメラ
+                } 
+            })
+            .then(s => {
+                stream = s;
+                video.srcObject = stream;
+                video.play();
             })
             .catch(error => {
-                alert("カメラが起動できませんでした: " + error.message);
+                // 外カメラが使えない場合は、内カメラ（前面カメラ）を試す
+                navigator.mediaDevices.getUserMedia({ 
+                    video: true 
+                })
+                .then(s => {
+                    stream = s;
+                    video.srcObject = stream;
+                    video.play();
+                })
+                .catch(error => {
+                    alert("カメラが起動できませんでした。iPadの設定でブラウザのカメラ利用が許可されているかご確認ください。");
+                    console.error("Camera startup failed: ", error);
+                });
             });
+        }
+        
+        // 撮影ボタンが押された時の動作
+        function takePhoto() {
+            if (!stream) {
+                alert("カメラが起動していません。しばらくお待ちください。");
+                return;
+            }
+
+            // CanvasのサイズをVideoのサイズに合わせる
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            // Videoの内容をCanvasに描画
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Canvasの内容を画像データ（PNG）として取得
+            const dataURL = canvas.toDataURL('image/png');
+
+            // ダウンロードリンクを作成
+            const link = document.createElement('a');
+            link.href = dataURL;
+            link.download = 'wankofesta_photo_' + new Date().getTime() + '.png'; // ファイル名をユニークにする
+
+            // リンクをクリックしてダウンロードを開始
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            alert("写真を保存しました！");
+        }
+
+        // カメラを起動
+        startCamera();
     </script>
+
 </body>
 </html>
